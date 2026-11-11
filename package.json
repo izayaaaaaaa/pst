@@ -1,0 +1,17 @@
+{
+  "name": "pst",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Drive a dedicated, logged-in Chrome profile on Facebook over CDP with Playwright",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "chrome": "node scripts/chrome.js",
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "playwright-core": "^1.48.0"
+  }
+}
