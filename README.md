@@ -42,12 +42,16 @@ Leave Chrome open between runs. Close it when you're done for the day, because w
 
 Search Marketplace, re-check the results on a schedule, track what changed (new listings, price changes, sold, missing), raise alerts, and show it all on a local page. Plan: `docs/plans/marketplace-watch.md`. Spec: `docs/plans/mw-contracts.md`.
 
-> **Built offline, not yet tuned on the live page.** The selectors in `src/fb.js` marked `// TUNE LIVE` are best guesses. Do the live step below before trusting a watch.
+> **Live-tuned 2026-11-14.** Card and detail parsing were checked against real Marketplace pages and a 4-pass watch.
+> Marketplace markup changes often, so if titles or fields come back empty, run `npm run market -- "<query>" --raw-detail`
+> and re-check the anchors in `src/fb.js` / `src/market/parse.js`.
 
 ```sh
 npm run market -- "test phone 128gb"                 # one pass: prints the search URL, area, parsed listings, 1 detail
 npm run market -- "test phone 128gb" --raw           # also prints the raw text of the first 3 cards (for tuning)
+npm run market -- "test phone 128gb" --raw-detail    # prints the item page text and field snippets (for tuning)
 npm run watch -- "test phone 128gb" --times 6 --every 30m --alert "price<25000"
+```
 npm run watch -- "test phone 128gb" --until 18:00 --max-price 30000 --alert "new & -keyword:icloud"
 npm run ui                                           # local page at http://127.0.0.1:5173/
 ```
