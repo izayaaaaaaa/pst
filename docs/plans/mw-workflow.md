@@ -78,4 +78,25 @@ Each red gate adds up to 2 Haiku fixers. That's within the under-10 guideline on
 3. First real watch: 3 passes at 10m.
 
 ## 6. Result
-_(filled in after the run: run ID, agents, duration, merge order, test numbers, what broke, contract issues, cleanup)_
+_(filled in by V, Opus 5.5, 2026-11-14)_
+
+- **Run ID:** TODO (planner). **Duration:** TODO (planner).
+- **Agents:** 5 Haiku builders (A–E), 2 Sonnet merge gates, V (Opus). R (Opus review) comes next. No fixers were needed.
+- **Merge order into `mw`:**
+  - gate 1: `mw-a` (`6dae974`) → `mw-b` (`680e958`) → `mw-c` (`054a01d`);
+  - gate 2: `mw-d` (`9c75d96`) → `mw-e` (`7254c97`).
+  - Every gate was green on the first try. Fixer tries: 0.
+- **Tests:** 160 pass, 0 fail (13 suites, about 0.2 s) on `mw` after both merges and again after V's fix. The old `test/guard.test.js` and `test/platform.test.js` are unchanged from `e8f9b30`. `package-lock.json` and `dependencies` are unchanged. Only the three scripts were added to `package.json`.
+- **What broke:** nothing at the gates. V found one DoD gap: tests imported `config.js` (through `human.js` and `fb.js`), which loaded `dotenv`, so a `.env` would have been read during `npm test`. V fixed it in `src/config.js` by skipping dotenv under `NODE_TEST_CONTEXT` (3 lines; §12 #9).
+- **DoD (§10):** all items pass except two:
+  - "no console errors" in the UI needs a browser check by you. V tested every API route, CSP, Host/Origin 403s and mark-read with curl against a seeded tmp store, and read `public/app.js`: it uses textContent/setAttribute only.
+  - The Opus review is the R step, next.
+- **Contract issues:** 27 were reported (A 5, B 5, C 5, D 7, E 5), 3 of them the same commit-trailer note.
+  - V accepted every builder choice.
+  - V changed one thing: `.env` in tests.
+  - The 18 that changed or pinned behaviour are recorded in `mw-contracts.md` §12.
+  - Worth a look in review: a corrupt store JSON file makes `/api/watches` answer 500 for the whole list (§12 #8).
+- **Cleanup:**
+  - V's tmp `OUTPUT_DIR` and its UI server (own PID) were removed or stopped.
+  - The worktrees `../pst-mw-wt/*` and branches `mw-a` … `mw-e` are still there, for the planner to remove after review.
+

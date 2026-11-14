@@ -1,7 +1,10 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defaultProfileDir } from './platform.js';
+
+// Tests never read .env (mw-contracts §1): `node --test` sets NODE_TEST_CONTEXT in each test process.
+if (!process.env.NODE_TEST_CONTEXT) dotenv.config();
 
 const num = (name, fallback) => {
   const v = process.env[name];

@@ -610,3 +610,26 @@ Merge only on green.
 
 ## 12. Contract issues reported by builders
 _(filled in during the run; only ones that changed behaviour)_
+
+Decided by V (Opus 5.5), 2026-11-14. The builder's choice was accepted unless marked otherwise. Gaps that were filled the obvious way and add no behaviour (prevPrice without `raw`, `reason: ''` on a non-match, fb.js keeping its own item-id regex, guard.js keeping its own atomic write, `create()` rejecting a bad id like every other method, the `ui` script landing before E) are not listed.
+
+| # | Task / § | Decision (now part of the contract) |
+|---|---|---|
+| 1 | A §2, §3.2 | `lastRank` is the index among the **deduplicated** cards of the pass, so a duplicate never shifts another listing's rank. |
+| 2 | A §3.2 | Two non-null amounts in **different currencies**: no event, and the stored price is kept. |
+| 3 | A §3.2 | A known listing seen with a **null price** keeps its stored price. A null observation never clears an amount. |
+| 4 | A §3.1 | `parsePrice` matches `Free` as a whole token anywhere in the text, taking the earliest match. `parseCard` only calls it on whole lines, so card parsing is unaffected. |
+| 5 | B §4.1 | On a first fire, `prevPrice` is null when the second-to-last `priceHistory` amount is null. |
+| 6 | B §4.1 | `drop>=0` is rejected like `drop>=0%`. `price<N`, `price<=N` and `drop>=N` take **whole units only**, so decimals are an error. |
+| 7 | B §4.2 | The `notify` log fallback strips control characters from the title and body before logging them, then appends `\x07`. This stops terminal escape injection from listing titles. |
+| 8 | C §5.4 | A corrupt `watch.json`, `listings.json`, `alertState.json` or `alerts-read.json` throws the JSON parse error. The UI answers 500, and for `/api/watches` that means the whole list fails, not just that watch. Accepted for now: writes are atomic, so this needs outside damage. JSONL readers skip bad lines as specced. |
+| 9 | D §1, §10 | **Changed by V:** `src/config.js` now skips `dotenv` when `NODE_TEST_CONTEXT` is set (set by `node --test` in every test process). The DoD line "no `.env` is read by any test" now holds for every test, the old `guard.test.js` included. Direct runs still read `.env`. |
+| 10 | D §6.1 | `--help` / `-h` print usage and exit 0 (`watch` and `market`). A missing query exits 2. Query whitespace is collapsed. |
+| 11 | D §6.1 | `parseUntil` needs a `YYYY-MM-DD` prefix before `Date.parse` (V8 accepts loose strings such as `foo 12`). |
+| 12 | D §6.2 | `passesDone` counts every finished pass, failed ones included. `nextPassAt` is null after the last pass and after any stop or error. Checkpoint, budget and generic failures each write a `Pass` with `ok: false`. `cardsRead` is the raw card count, so the results-ran-out rule uses the raw count. The runner logs `Watch <id> started` when it creates the watch. |
+| 13 | D §6.4 | `market` refuses to run during quiet hours (exit 0 with a message), like `index.js`. |
+| 14 | E §7.1 | `POST /api/alerts/read` drops ids that aren't alerts of that watch, and `marked` counts only real alerts. |
+| 15 | E §7.1 | A bad `since` or `limit`, bad JSON, a bad body or a body over 10 KB → 400 `{ error }`. An unexpected exception → 500 `{ error: 'Server error' }`. |
+| 16 | E §7.1 | `server.js` imports `config.js` dynamically, and only when run directly. |
+| 17 | E §7.2 | The watch page gets the alerted mark from `/api/alerts?watch=<id>` (listings whose id appears in an alert's `listingId`). |
+| 18 | A, C, E commits | The builder commits carry a `Claude Haiku 5.5` trailer because the session's attribution reminder said so. That's accurate, since Haiku workers built them. History is left as is, and V's commit carries the Opus trailer. |

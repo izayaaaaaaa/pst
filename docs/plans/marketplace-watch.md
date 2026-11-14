@@ -7,6 +7,22 @@ A watch runs for a number of checks (passes) and/or until a set time, e.g. "6 ch
 
 Agreed 2026-11-14: `--times` and `--until` both supported; details on; default location Pasig City within 6 km; UI on this machine only; alerts specced (section 5a).
 
+## Status (2026-11-14)
+- **Built offline** on branch `mw` (run in `mw-workflow.md`, spec in `mw-contracts.md`):
+  - parsing, diff and details queue;
+  - alert rules and desktop notifications;
+  - daily cap, store and lock;
+  - Marketplace methods in `src/fb.js`;
+  - runner and the `watch` / `market` CLIs;
+  - local UI.
+  - 160 unit tests pass. Nothing has touched the live page yet.
+- **Milestones:** the code for 2 (watch), 3 (alerts) and 4 (UI) is done and tested with fakes. Milestone 1's code is done too (`npm run market`, parsers).
+- **Pending, live with the user:**
+  - milestone 1's live step: Pasig's location value, whether `radius` works, tuning the `// TUNE LIVE` selectors, saving cleaned fixtures;
+  - milestone 2's real 3-pass watch at 10m;
+  - checking macOS notification permission on a real alert.
+- Builder contract decisions are in `mw-contracts.md` §12.
+
 ## Constraints carried over
 - Attach to the user's Chrome only (D-001). Chrome must stay open for the whole watch; each pass attaches, works in its own tab, and detaches.
 - Every page load goes through `Facebook.open()`, so the visit budget, pauses and checkpoint wait apply.

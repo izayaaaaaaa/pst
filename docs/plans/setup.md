@@ -25,13 +25,15 @@ CDP attach on a dedicated Chrome profile (see decisions D-001 to D-003).
 - [ ] User runs `npm run chrome`, logs in, runs `npm start` and `npm start -- <groupId>`
 - [ ] Decide the actual job in groups: read/monitor, post, or collect data
 - [x] First job chosen: Marketplace watch (`marketplace-watch.md`, contracts `mw-contracts.md`, run `mw-workflow.md`)
+- [x] Marketplace watch built offline on branch `mw` (2026-11-14): `npm run market`, `npm run watch`, `npm run ui`
+- [ ] Marketplace live step: Pasig location value, tune `// TUNE LIVE` selectors, first 3-pass watch (README "Still to do")
 - [ ] Tune `readPosts` selectors against the live page (author, time, link, text)
-- [ ] Save output somewhere (`output/` JSON, or into Sibyl)
+- [x] Save output somewhere: watches go to `output/` JSON (D-005)
 
 ### Later, only if needed
 - [ ] Unattended mode via `launchPersistentContext` on the same profile
 - [ ] Scheduled runs (Task Scheduler), only during normal waking hours
-- [ ] Daily visit cap across runs (persisted counter)
+- [x] Daily visit cap across runs (persisted counter): `MAX_DAILY_VISITS`, built with the Marketplace watch (D-007)
 
 ## Risks
 - Account lock or ban: Meta forbids automation. Keep volume low, same machine/IP, human pacing.
