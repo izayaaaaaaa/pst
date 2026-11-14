@@ -2,17 +2,10 @@
 // Run it, log in to Facebook by hand (2FA included) the first time, and leave the window open.
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import path from 'node:path';
 import { config, cdpUrl } from '../src/config.js';
+import { chromeCandidates } from '../src/platform.js';
 
-const candidates = [
-  config.chromePath,
-  path.join(process.env.PROGRAMFILES || 'C:\\Program Files', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-  path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-  path.join(process.env.LOCALAPPDATA || '', 'Google', 'Chrome', 'Application', 'chrome.exe'),
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/usr/bin/google-chrome',
-].filter(Boolean);
+const candidates = [config.chromePath, ...chromeCandidates()].filter(Boolean);
 
 const chrome = candidates.find((p) => fs.existsSync(p));
 if (!chrome) {
@@ -46,6 +39,6 @@ child.unref();
 
 console.log(`Started Chrome
   profile: ${config.profileDir}
-  CDP:     ${cdpUrl()}  (any program on this PC can control it; close Chrome when done)
+  CDP:     ${cdpUrl()}  (any program on this computer can control it; close Chrome when done)
 
 First time? Log in to Facebook in that window by hand, then run: npm start`);

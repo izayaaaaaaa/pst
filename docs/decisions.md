@@ -6,7 +6,7 @@ The user starts Chrome (`npm run chrome`); the script attaches with `connectOver
 **Cost:** Chrome must already be open, so runs aren't unattended. If that's needed later, add a `launchPersistentContext` mode (`channel: 'chrome'`, headed, `ignoreDefaultArgs: ['--enable-automation']`) on the same profile.
 
 ## D-002 — Dedicated profile outside the repo (2026-11-11)
-Profile at `%LOCALAPPDATA%\pst\chrome-profile`.
+Profile at `%LOCALAPPDATA%\pst\chrome-profile` on Windows, `~/Library/Application Support/pst/chrome-profile` on macOS, `~/.local/share/pst/chrome-profile` on Linux (`src/platform.js`).
 **Why:** Chrome 136+ ignores `--remote-debugging-port` on the default profile; keeping it outside the repo means cookies can't be committed.
 
 ## D-003 — Playwright on real Chrome, no Camoufox or stealth plugins (2026-11-11)

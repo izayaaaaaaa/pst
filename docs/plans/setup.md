@@ -12,7 +12,8 @@ CDP attach on a dedicated Chrome profile (see decisions D-001 to D-003).
 
 ## Status
 ### P0 — boilerplate (done 2026-11-11)
-- [x] Chrome launcher script (finds chrome.exe, skips if already running)
+- [x] Chrome launcher script (finds Chrome, skips if already running)
+- [x] Launcher and profile path work on Windows and macOS (2026-11-14)
 - [x] `attach()` / `detach()` over CDP
 - [x] Human-paced helpers: pauses, scrolling, mouse-moved clicks, typing
 - [x] Checkpoint/login detection that waits for the user

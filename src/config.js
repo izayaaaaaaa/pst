@@ -1,6 +1,5 @@
 import 'dotenv/config';
-import os from 'node:os';
-import path from 'node:path';
+import { defaultProfileDir } from './platform.js';
 
 const num = (name, fallback) => {
   const v = process.env[name];
@@ -9,11 +8,6 @@ const num = (name, fallback) => {
   if (Number.isNaN(n)) throw new Error(`${name} must be a number, got "${v}"`);
   return n;
 };
-
-function defaultProfileDir() {
-  const base = process.env.LOCALAPPDATA || path.join(os.homedir(), '.local', 'share');
-  return path.join(base, 'pst', 'chrome-profile');
-}
 
 export const config = {
   cdpPort: num('CDP_PORT', 9222),
