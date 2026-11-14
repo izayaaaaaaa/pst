@@ -77,13 +77,20 @@ Everything is JSON under `output/` (git-ignored):
 - `output/watches/<id>/`: `watch.json`, `listings.json`, `passes.jsonl`, `events.jsonl`, `alerts.jsonl`, `alertState.json`, `alerts-read.json`;
 - `output/visits-YYYY-MM-DD.json`: the daily visit counter.
 
-### Still to do: the live step (with you watching)
+### Live step — done 2026-11-14 (manual, with the user watching)
 
-1. `npm run chrome` and log in.
-2. `npm run market -- "<something>" --raw`. Check the parsed listings against the page.
-3. Set Pasig City + 6 km in the location dialog by hand, read the location slug or id off the URL, and put it in `MARKET_LOCATION` (later the code default). Check that `radius` in the URL works.
-4. Tune the `// TUNE LIVE` selectors in `src/fb.js` (cards, search-area chip, detail page). Save cleaned card and detail texts as test fixtures.
-5. First real watch: `npm run watch -- "<query>" --times 3 --every 10m`, then check it in `npm run ui`.
+- [x] `npm run chrome` and log in by hand.
+- [x] `npm run market -- "<query>" --raw`. Parsed listings match the page.
+- [x] Pasig + 6 km read back from the results page; `radius` is honored. `--location` pins an area per search.
+- [x] Card parsing tuned: the `Just listed` badge is skipped, title and place are read from the right lines.
+- [x] Detail parsing tuned: title (visible `h1`), price, description, seller, posted time and condition come from the
+      page text by label, not class names.
+- [x] First real watch: `npm run watch -- "monitor 27"` (4 passes), checked in `npm run ui`.
+
+Still open:
+
+- [ ] `npm start` and `npm start -- <groupId>` smoke run (page and group feeds).
+- [ ] Tune the older `readPosts` selectors (author, time, link, text).
 
 ## Layout
 

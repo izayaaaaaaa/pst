@@ -139,7 +139,7 @@ export class Facebook {
     const seen = new Map(); // item id -> raw card
     let stale = 0;
     for (let scrolls = 0; ; scrolls++) {
-      // TUNE LIVE: item links and their text/image on the search results grid.
+      // Item links and their text/image on the search results grid.
       const found = await this.page.locator(ITEM_LINK).evaluateAll((links) =>
         links.map((a) => ({
           href: a.href,
@@ -170,7 +170,7 @@ export class Facebook {
    */
   async readSearchArea() {
     try {
-      // TUNE LIVE: the location chip is a short element that mentions km.
+      // The location chip is a short element that mentions km.
       const text = await this.page.evaluate(() => {
         const re = /\b\d+(\.\d+)?\s*km\b/i;
         for (const el of document.querySelectorAll('[role="button"], [role="link"], span, div')) {

@@ -26,7 +26,8 @@ CDP attach on a dedicated Chrome profile (see decisions D-001 to D-003).
 - [ ] Decide the actual job in groups: read/monitor, post, or collect data
 - [x] First job chosen: Marketplace watch (`marketplace-watch.md`, contracts `mw-contracts.md`, run `mw-workflow.md`)
 - [x] Marketplace watch built offline on branch `mw` (2026-11-14): `npm run market`, `npm run watch`, `npm run ui`
-- [ ] Marketplace live step: Pasig location value, tune `// TUNE LIVE` selectors, first 3-pass watch (README "Still to do")
+- [x] Marketplace live step (2026-11-14): Pasig + 6 km confirmed, card and detail selectors tuned on real pages, first watch
+      completed (`20261114-153224-monitor-27`, 4 passes) and viewed in the UI
 - [ ] Tune `readPosts` selectors against the live page (author, time, link, text)
 - [x] Save output somewhere: watches go to `output/` JSON (D-005)
 
