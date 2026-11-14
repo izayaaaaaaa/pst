@@ -2,6 +2,7 @@
 // aria-labels and visible text over class names, and keep them all in this file.
 import { pause, scroll } from './human.js';
 import { waitIfBlocked } from './guard.js';
+import { detailFieldsFromText } from './market/parse.js';
 
 const FB = 'https://www.facebook.com';
 
@@ -192,54 +193,16 @@ export class Facebook {
    *   description: string|null, sellerName: string|null, postedText: string|null,
    *   condition: string|null }>}
    */
-  async readListingDetail(id) {    await this.open(`/marketplace/item/${id}/`);
+  async readListingDetail(id) {
+    await this.open(`/marketplace/item/${id}/`);
     try {
-      // TUNE LIVE: every field below is a best guess at the item page layout.
-      return await this.page.evaluate(() => {
-        const text = (el) => (el?.innerText ?? '').trim() || null;
-        const leaves = () =>
-          [...document.querySelectorAll('span, div, h1, h2, h3, h4')].filter(
-            (el) => el.childElementCount === 0,
-          );
-        // The text block that follows the element whose text is exactly `label`.
-        const valueAfter = (label) => {
-          const el = leaves().find((e) => (e.textContent ?? '').trim() === label);
-          if (!el) return null;
-          let node = el;
-          for (let up = 0; up < 4 && node && !node.nextElementSibling; up++) {
-            node = node.parentElement;
-          }
-          return text(node?.nextElementSibling);
-        };
-
-        const h1 = document.querySelector('h1');
-        const title = text(h1);
-
-        // Price: the first short leaf after the title that looks like a currency amount.
-        const priceRe = /^(₱|\$|€|£|PHP|USD|EUR|GBP)\s?[\d,]+(\.\d+)?$|^Free$/;
-        let priceText = null;
-        for (const el of leaves()) {
-          const t = (el.textContent ?? '').trim();
-          if (t.length > 30 || !priceRe.test(t)) continue;
-          if (h1 && !(h1.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
-          priceText = t;
-          break;
-        }
-
-        // Badge: a visible Sold or Pending label.
-        const badge = leaves().find((e) => /^(Sold|Pending)$/i.test((e.textContent ?? '').trim()));
-        const labelText = text(badge);
-
-        const posted = leaves().find((e) => /^Listed\s/.test((e.textContent ?? '').trim()));
-        const postedText = text(posted);
-
-        const description = valueAfter('Details') ?? valueAfter('Description');
-        const condition = valueAfter('Condition');
-        const seller = valueAfter('Seller information');
-        const sellerName = seller ? seller.split('\n')[0].trim() || null : null;
-
-        return { title, priceText, labelText, description, sellerName, postedText, condition };
-      });
+      // The visible text carries every field in a stable order; parse.js anchors on labels and
+      // line order, so Marketplace's obfuscated class names never matter here.
+      const page = await this.page.evaluate(() => ({
+        text: document.body.innerText ?? '',
+        title: document.querySelector('h1')?.innerText ?? null,
+      }));
+      return detailFieldsFromText(page);
     } catch {
       return {
         title: null,

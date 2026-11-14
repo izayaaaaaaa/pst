@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { itemIdFromHref, parsePrice, parseCard, parseDetail } from '../src/market/parse.js';
+import { itemIdFromHref, parsePrice, parseCard, parseDetail, detailFieldsFromText } from '../src/market/parse.js';
 
 test('itemIdFromHref handles absolute, relative and query-string hrefs', () => {
   assert.equal(itemIdFromHref('https://www.facebook.com/marketplace/item/1000000000000001/'), '1000000000000001');
@@ -124,4 +124,79 @@ test('parseDetail label is pending when the text says so, and null otherwise', (
   assert.equal(parseDetail({ labelText: 'Pending sale' }).label, 'pending');
   assert.equal(parseDetail({ labelText: 'Listed 2 days ago' }).label, null);
   assert.equal(parseDetail({}).price, null);
+});
+
+test('parseCard skips the "Just listed" badge and keeps the real title and place', () => {
+  const card = parseCard({
+    href: '/marketplace/item/1000000000000008/',
+    text: 'Just listed\nPHP3,000\nMonitor 24" - test panel\nPasig, NCR',
+  });
+  assert.equal(card.title, 'Monitor 24" - test panel');
+  assert.equal(card.location, 'Pasig, NCR');
+  assert.equal(card.price.amount, 300000);
+  assert.equal(card.label, null);
+});
+
+test('detailFieldsFromText reads an item page by labels and line order', () => {
+  // Cleaned from a live page on 2026-11-14: real layout, made-up seller and item text.
+  const fields = detailFieldsFromText({
+    title: 'Monitor 24" - test panel',
+    text: [
+      '',
+      'Marketplace',
+      'Location',
+      'Pasig',
+      ' · Within 5 km',
+      'Monitor 24" - test panel',
+      'PHP3,000',
+      'Listed about an hour ago in Pasig, NCR',
+      'Message',
+      'Details',
+      'Condition',
+      'Used - like new',
+      'Open box. Complete accessories',
+      '2 pcs available, good as new',
+      'Pasig, NCR · Location is approximate',
+      'Ads',
+      'Seller information',
+      'Seller details',
+      'Maria Test',
+      '(16)',
+      'Joined Facebook in 2010',
+      'Send seller a message',
+      'Send',
+      "Today's picks",
+      'PHP1,850',
+      'Other listing',
+      'Pasig, NCR',
+    ].join('\n'),
+  });
+  assert.deepEqual(fields, {
+    title: 'Monitor 24" - test panel',
+    priceText: 'PHP3,000',
+    labelText: null,
+    description: 'Open box. Complete accessories\n2 pcs available, good as new',
+    sellerName: 'Maria Test',
+    postedText: 'Listed about an hour ago in Pasig, NCR',
+    condition: 'Used - like new',
+  });
+});
+
+test('detailFieldsFromText gives a null description when the item has none', () => {
+  const fields = detailFieldsFromText({
+    title: 'Test Lamp',
+    text: [
+      'Test Lamp',
+      '₱500',
+      'Listed 2 days ago in Test City',
+      'Details',
+      'Condition',
+      'Good',
+      'Test City, NCR · Location is approximate',
+    ].join('\n'),
+  });
+  assert.equal(fields.description, null);
+  assert.equal(fields.condition, 'Good');
+  assert.equal(fields.postedText, 'Listed 2 days ago in Test City');
+  assert.equal(fields.priceText, '₱500');
 });
