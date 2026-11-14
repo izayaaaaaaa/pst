@@ -346,27 +346,30 @@ function watchView(id) {
 
   function renderHeader(detail) {
     const w = detail.watch;
+    // replaceChildren stringifies null, so filter the optional children out.
     header.replaceChildren(
-      el('h1', {}, w.query),
-      el(
-        'div',
-        { class: 'meta' },
-        el('span', {}, el('b', {}, 'Status'), badge(w.status)),
-        el('span', {}, el('b', {}, 'Passes'), `${w.passesDone}/${w.passesTotal}`),
-        w.until ? el('span', {}, el('b', {}, 'Until'), clock(w.until)) : null,
-        w.status === 'running' ? el('span', {}, el('b', {}, 'Next pass'), countdown(w.nextPassAt)) : null,
-        el('span', {}, el('b', {}, 'Details queued'), String(detail.detailsQueued ?? 0)),
+      ...[
+        el('h1', {}, w.query),
         el(
-          'span',
-          {},
-          el('b', {}, 'Search area'),
-          w.searchArea ? w.searchArea : badge('not read', 'warn'),
+          'div',
+          { class: 'meta' },
+          el('span', {}, el('b', {}, 'Status'), badge(w.status)),
+          el('span', {}, el('b', {}, 'Passes'), `${w.passesDone}/${w.passesTotal}`),
+          w.until ? el('span', {}, el('b', {}, 'Until'), clock(w.until)) : null,
+          w.status === 'running' ? el('span', {}, el('b', {}, 'Next pass'), countdown(w.nextPassAt)) : null,
+          el('span', {}, el('b', {}, 'Details queued'), String(detail.detailsQueued ?? 0)),
+          el(
+            'span',
+            {},
+            el('b', {}, 'Search area'),
+            w.searchArea ? w.searchArea : badge('not read', 'warn'),
+          ),
         ),
-      ),
-      (w.alerts ?? []).length
-        ? el('div', {}, el('b', { class: 'muted' }, 'Rules: '), w.alerts.map((r) => el('span', { class: 'chip' }, r.text)))
-        : null,
-      w.lastError ? el('p', { class: 'notice' }, `Last error: ${w.lastError}`) : null,
+        (w.alerts ?? []).length
+          ? el('div', {}, el('b', { class: 'muted' }, 'Rules: '), w.alerts.map((r) => el('span', { class: 'chip' }, r.text)))
+          : null,
+        w.lastError ? el('p', { class: 'notice' }, `Last error: ${w.lastError}`) : null,
+      ].filter(Boolean),
     );
   }
 
