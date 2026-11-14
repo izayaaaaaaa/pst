@@ -96,6 +96,13 @@ Still open:
 - [ ] `npm start` and `npm start -- <groupId>` smoke run (page and group feeds).
 - [ ] Tune the older `readPosts` selectors (author, time, link, text).
 
+## Next: deal hunting (planned, not built)
+
+Standing watches for the real use case — tech deals (monitors, networking gear) and property
+rentals from groups and Marketplace's rentals category. Spec: `docs/plans/deal-hunting.md`
+(multi-source watches, `below-median` deal alerts, saved specs with `--continue`, group post
+reading). Milestone 4 of that plan covers the `readPosts` tuning above.
+
 ## Layout
 
 | File | What it does |
