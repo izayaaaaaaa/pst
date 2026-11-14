@@ -192,8 +192,7 @@ export class Facebook {
    *   description: string|null, sellerName: string|null, postedText: string|null,
    *   condition: string|null }>}
    */
-  async readListingDetail(id) {
-    await this.open(`/marketplace/item/${id}/`);
+  async readListingDetail(id) {    await this.open(`/marketplace/item/${id}/`);
     try {
       // TUNE LIVE: every field below is a best guess at the item page layout.
       return await this.page.evaluate(() => {
@@ -252,5 +251,39 @@ export class Facebook {
         condition: null,
       };
     }
+  }
+
+  /**
+   * Diagnostic dump of an item page for selector tuning (`--raw-detail`). Not used by watch runs.
+   * Opens the page (one visit), so the caller's budget must allow it.
+   * @param {string} id
+   */
+  async dumpListingDetail(id) {
+    await this.open(`/marketplace/item/${id}/`);
+    return this.page.evaluate(() => {
+      const txt = (el) => (el?.innerText ?? '').trim() || null;
+      const html = (el) => (el?.outerHTML ?? '').slice(0, 2500);
+      const leaves = [...document.querySelectorAll('span, div, h1, h2, h3, h4')].filter(
+        (el) => el.childElementCount === 0,
+      );
+      const findLeaf = (re) => leaves.find((e) => re.test((e.textContent ?? '').trim()));
+      const up = (el) => {
+        let node = el;
+        for (let i = 0; i < 5 && node && node !== document.body; i++) node = node.parentElement;
+        return node;
+      };
+      return {
+        url: location.href,
+        text: (document.body.innerText ?? '').slice(0, 6000),
+        h1Html: html(document.querySelector('h1')),
+        priceCandidates: [...document.querySelectorAll('span')]
+          .map((e) => (e.textContent ?? '').trim())
+          .filter((t) => t && t.length < 24 && /^(₱|\$|€|£|PHP|USD)\s?[\d,]+/.test(t))
+          .slice(0, 5),
+        sellerHtml: html(findLeaf(/^Seller/i) ? up(findLeaf(/^Seller/i)) : null),
+        detailsHtml: html(findLeaf(/^(Details|Description)$/i) ? up(findLeaf(/^(Details|Description)$/i)) : null),
+        conditionHtml: html(findLeaf(/^Condition$/i) ? up(findLeaf(/^Condition$/i)) : null),
+      };
+    });
   }
 }

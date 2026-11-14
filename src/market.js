@@ -10,8 +10,9 @@ import { detailsAllowed } from './watch/runner.js';
 import { parseCard, parseDetail as parseDetailRaw } from './market/parse.js';
 import { formatMoney } from './alerts/rules.js';
 
-const USAGE = `Usage: npm run market -- "<query>" [--raw] [--details N] [--min-price N] [--max-price N] [--location SLUG] [--radius KM] [--days N] [--max-listings N]
-  --raw   also print the raw card text of the first 3 cards (for tuning selectors)
+const USAGE = `Usage: npm run market -- "<query>" [--raw] [--raw-detail] [--details N] [--min-price N] [--max-price N] [--location SLUG] [--radius KM] [--days N] [--max-listings N]
+  --raw         also print the raw card text of the first 3 cards (for tuning selectors)
+  --raw-detail  print the item page text and field snippets instead of the parsed detail (for tuning selectors)
   Watch-only options (--times, --until, --every, --alert, --no-desktop) are ignored here.`;
 
 const IGNORED = new Set(['times', 'until', 'every']);
@@ -22,7 +23,7 @@ function marketArgv(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     const name = a.startsWith('--') ? a.slice(2).split('=')[0] : null;
-    if (name === 'raw') continue;
+    if (name === 'raw' || name === 'raw-detail') continue;
     if (name && IGNORED.has(name)) {
       if (!a.includes('=')) i += 1; // skip its value
       continue;
@@ -39,6 +40,7 @@ async function main() {
     return 0;
   }
   const raw = argv.includes('--raw');
+  const rawDetail = argv.includes('--raw-detail');
 
   let spec;
   try {
@@ -88,6 +90,12 @@ async function main() {
       searchesRemaining: 0,
     });
     for (const card of cards.slice(0, k)) {
+      if (rawDetail) {
+        const dump = await fb.dumpListingDetail(card.id);
+        console.log(`\n=== detail dump ${card.id} ===`);
+        console.log(JSON.stringify(dump, null, 2));
+        continue;
+      }
       const detail = parseDetailRaw(await fb.readListingDetail(card.id), { currency: spec.currency });
       console.log(`\nDetail ${card.id}:`);
       console.log(JSON.stringify(detail, null, 2));
