@@ -8,6 +8,9 @@
   "scripts": {
     "chrome": "node scripts/chrome.js",
     "start": "node src/index.js",
+    "watch": "node src/watch.js",
+    "market": "node src/market.js",
+    "ui": "node src/server.js",
     "test": "node --test"
   },
   "dependencies": {
