@@ -197,11 +197,20 @@ export class Facebook {
     await this.open(`/marketplace/item/${id}/`);
     try {
       // The visible text carries every field in a stable order; parse.js anchors on labels and
-      // line order, so Marketplace's obfuscated class names never matter here.
-      const page = await this.page.evaluate(() => ({
-        text: document.body.innerText ?? '',
-        title: document.querySelector('h1')?.innerText ?? null,
-      }));
+      // line order, so Marketplace's obfuscated class names never matter here. The page can hold
+      // more than one h1 (a hidden chats/messenger heading), so prefer a visible non-generic one.
+      const page = await this.page.evaluate(() => {
+        const generic = /^(marketplace|chats|notifications|facebook|buy and sell groups)$/i;
+        const h1s = [...document.querySelectorAll('h1')]
+          .filter((el) => el.getClientRects().length > 0)
+          .map((el) => (el.innerText ?? '').trim())
+          .filter((t) => t && !generic.test(t));
+        const ogTitle = (document.querySelector('meta[property="og:title"]')?.content ?? '').trim();
+        return {
+          text: document.body.innerText ?? '',
+          title: h1s[0] ?? (ogTitle && !generic.test(ogTitle) ? ogTitle : null),
+        };
+      });
       return detailFieldsFromText(page);
     } catch {
       return {
@@ -237,6 +246,11 @@ export class Facebook {
       };
       return {
         url: location.href,
+        h1Texts: [...document.querySelectorAll('h1')].map((el) => ({
+          text: (el.innerText ?? '').trim(),
+          visible: el.getClientRects().length > 0,
+        })),
+        ogTitle: (document.querySelector('meta[property="og:title"]')?.content ?? '').trim() || null,
         text: (document.body.innerText ?? '').slice(0, 6000),
         h1Html: html(document.querySelector('h1')),
         priceCandidates: [...document.querySelectorAll('span')]
