@@ -24,6 +24,7 @@ CDP attach on a dedicated Chrome profile (see decisions D-001 to D-003).
 ### P1 — first real use (next)
 - [ ] User runs `npm run chrome`, logs in, runs `npm start` and `npm start -- <groupId>`
 - [ ] Decide the actual job in groups: read/monitor, post, or collect data
+- [x] First job chosen: Marketplace watch (`marketplace-watch.md`, contracts `mw-contracts.md`, run `mw-workflow.md`)
 - [ ] Tune `readPosts` selectors against the live page (author, time, link, text)
 - [ ] Save output somewhere (`output/` JSON, or into Sibyl)
 
