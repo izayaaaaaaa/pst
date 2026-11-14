@@ -123,3 +123,29 @@ describe('Facebook.open', () => {
     assert.ok(log[0].startsWith('goto https://www.facebook.com/marketplace/search?query=Test+Phone&minPrice=500'));
   });
 });
+
+describe('review fixes', () => {
+  test('facebookUrl resolves paths and refuses other hosts or plain http', () => {
+    assert.equal(fbMod.facebookUrl('/groups/1'), 'https://www.facebook.com/groups/1');
+    assert.equal(fbMod.facebookUrl('https://facebook.com/x'), 'https://facebook.com/x');
+    assert.throws(() => fbMod.facebookUrl('https://evil.example/'), /non-Facebook/);
+    assert.throws(() => fbMod.facebookUrl('http://www.facebook.com/'), /non-Facebook/);
+    assert.throws(() => fbMod.facebookUrl('https://www.facebook.com.evil.example/'), /non-Facebook/);
+  });
+
+  test('open() refuses a non-Facebook URL before spending any budget', async () => {
+    const log = [];
+    const budget = new guardMod.Budget(5);
+    let dailySpent = 0;
+    const fb = new fbMod.Facebook(fakePage(log), budget, { daily: { spend: () => { dailySpent++; } } });
+    await assert.rejects(fb.open('https://evil.example/'), /non-Facebook/);
+    assert.equal(budget.used, 0);
+    assert.equal(dailySpent, 0);
+    assert.deepEqual(log, []);
+  });
+
+  test('constructor rejects a budget passed where { daily } belongs', () => {
+    const daily = { spend() {}, left() { return 1; } };
+    assert.throws(() => new fbMod.Facebook(fakePage([]), new guardMod.Budget(1), daily), /\{ daily \}/);
+  });
+});

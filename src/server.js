@@ -19,8 +19,10 @@ const CONTENT_TYPES = {
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'no-referrer',
+  'X-Frame-Options': 'DENY',
   'Content-Security-Policy':
-    "default-src 'self'; img-src 'self' https://*.fbcdn.net data:; style-src 'self'; script-src 'self'; connect-src 'self'",
+    "default-src 'self'; img-src 'self' https://*.fbcdn.net data:; style-src 'self'; script-src 'self'; connect-src 'self'; " +
+    "frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'",
 };
 const LISTING_STATUSES = ['active', 'pending', 'sold', 'missing'];
 

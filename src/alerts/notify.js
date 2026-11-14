@@ -36,8 +36,9 @@ function clean(s, max) {
  * @returns {{ cmd: string, args: string[], env: Record<string, string> } | null}
  */
 export function buildCommand(platform, title, body) {
-  const t = clean(title, 64);
-  const b = clean(body, 200);
+  // A leading '-' could be read as an option by osascript/notify-send.
+  const t = clean(title, 64).replace(/^-+/, (m) => ' ' + m);
+  const b = clean(body, 200).replace(/^-+/, (m) => ' ' + m);
   if (platform === 'darwin') {
     return {
       cmd: 'osascript',
@@ -91,7 +92,7 @@ export function alertsToNotifications(alerts, { query, max = 3 }) {
  * @param {{ platform?: string, spawn?: Function, log?: (msg: string) => void }} [opts]
  * @returns {Promise<void>}
  */
-export async function notify(notifications, { platform = process.platform, spawn = realSpawn, log = console.log } = {}) {
+export async function notify(notifications, { platform = process.platform, spawn = realSpawn, log = console.log, timeoutMs = 10_000 } = {}) {
   const fallback = (n) => log(`${clean(n.title, 1000)}\n${clean(n.body, 1000)}\x07`);
   for (const n of notifications) {
     const cmd = buildCommand(platform, n.title, n.body);
@@ -102,8 +103,12 @@ export async function notify(notifications, { platform = process.platform, spawn
     try {
       await new Promise((resolve, reject) => {
         const child = spawn(cmd.cmd, cmd.args, { env: { ...process.env, ...cmd.env }, stdio: 'ignore' });
-        child.once('error', reject);
-        child.once('exit', (code) => (code === 0 ? resolve() : reject(new Error(`exit ${code}`))));
+        const timer = setTimeout(() => {
+          try { child.kill?.(); } catch {}
+          reject(new Error('timeout'));
+        }, timeoutMs);
+        child.once('error', (e) => { clearTimeout(timer); reject(e); });
+        child.once('exit', (code) => { clearTimeout(timer); code === 0 ? resolve() : reject(new Error(`exit ${code}`)); });
       });
     } catch {
       fallback(n);

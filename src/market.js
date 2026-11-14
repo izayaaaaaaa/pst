@@ -66,7 +66,7 @@ async function main() {
 
   const { page, detach } = await attach();
   try {
-    const fb = new Facebook(page, new Budget(1 + spec.detailsPerPass), daily);
+    const fb = new Facebook(page, new Budget(1 + spec.detailsPerPass), { daily });
     await fb.marketplaceSearch(spec.query, spec.filters);
     console.log(`searchArea: ${(await fb.readSearchArea()) ?? '(not found)'}`);
 

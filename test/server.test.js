@@ -321,6 +321,8 @@ describe('server', () => {
     assert.match(index.body, /<script type="module" src="\/static\/app\.js">/);
     assert.match(index.headers['content-security-policy'], /default-src 'self'/);
     assert.match(index.headers['content-security-policy'], /img-src 'self' https:\/\/\*\.fbcdn\.net data:/);
+    assert.match(index.headers['content-security-policy'], /frame-ancestors 'none'/);
+    assert.equal(index.headers['x-frame-options'], 'DENY');
     assert.equal(index.headers['x-content-type-options'], 'nosniff');
     assert.equal(index.headers['referrer-policy'], 'no-referrer');
 

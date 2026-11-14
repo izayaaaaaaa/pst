@@ -138,3 +138,24 @@ test('notify logs when the platform has no command', async () => {
   assert.equal(logs.length, 1);
   assert.ok(logs[0].endsWith('\x07'));
 });
+
+test('buildCommand neutralizes a leading dash so text is never read as an option', () => {
+  const c = buildCommand('darwin', '-e', '--evil');
+  assert.equal(c.args.at(-2), ' -e');
+  assert.equal(c.args.at(-1), ' --evil');
+  const l = buildCommand('linux', '-x', 'ok');
+  assert.ok(!l.args.at(-2).startsWith('-'));
+});
+
+test('notify kills a hung child after the timeout and logs the fallback', async () => {
+  const logs = [];
+  let killed = false;
+  const spawn = () => {
+    const child = new EventEmitter();
+    child.kill = () => { killed = true; };
+    return child; // never exits
+  };
+  await notify([{ title: 't', body: 'b' }], { platform: 'darwin', spawn, log: (m) => logs.push(m), timeoutMs: 20 });
+  assert.ok(killed);
+  assert.equal(logs.length, 1);
+});

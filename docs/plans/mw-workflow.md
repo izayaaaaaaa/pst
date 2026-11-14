@@ -80,8 +80,8 @@ Each red gate adds up to 2 Haiku fixers. That's within the under-10 guideline on
 ## 6. Result
 _(filled in by V, Opus 5.5, 2026-11-14)_
 
-- **Run ID:** TODO (planner). **Duration:** TODO (planner).
-- **Agents:** 5 Haiku builders (A–E), 2 Sonnet merge gates, V (Opus). R (Opus review) comes next. No fixers were needed.
+- **Run ID:** `wf_3b316271-bcf`. **Duration:** about 13 min (793 s), 9 agents, about 700k subagent tokens, 148 tool calls.
+- **Agents:** 5 Haiku builders (A–E), 2 Sonnet merge gates, V (Opus). R (Opus review). No fixers were needed.
 - **Merge order into `mw`:**
   - gate 1: `mw-a` (`6dae974`) → `mw-b` (`680e958`) → `mw-c` (`054a01d`);
   - gate 2: `mw-d` (`9c75d96`) → `mw-e` (`7254c97`).
@@ -90,7 +90,7 @@ _(filled in by V, Opus 5.5, 2026-11-14)_
 - **What broke:** nothing at the gates. V found one DoD gap: tests imported `config.js` (through `human.js` and `fb.js`), which loaded `dotenv`, so a `.env` would have been read during `npm test`. V fixed it in `src/config.js` by skipping dotenv under `NODE_TEST_CONTEXT` (3 lines; §12 #9).
 - **DoD (§10):** all items pass except two:
   - "no console errors" in the UI needs a browser check by you. V tested every API route, CSP, Host/Origin 403s and mark-read with curl against a seeded tmp store, and read `public/app.js`: it uses textContent/setAttribute only.
-  - The Opus review is the R step, next.
+  - The Opus review (R) is done: findings are below.
 - **Contract issues:** 27 were reported (A 5, B 5, C 5, D 7, E 5), 3 of them the same commit-trailer note.
   - V accepted every builder choice.
   - V changed one thing: `.env` in tests.
@@ -100,3 +100,16 @@ _(filled in by V, Opus 5.5, 2026-11-14)_
   - V's tmp `OUTPUT_DIR` and its UI server (own PID) were removed or stopped.
   - The worktrees `../pst-mw-wt/*` and branches `mw-a` … `mw-e` are still there, for the planner to remove after review.
 
+
+- **Review (R) findings and planner fixes (after the run):**
+  - **High, fixed:** `src/market.js` passed the `DailyBudget` positionally instead of as `{ daily }`, so `npm run market` skipped the daily cap. Fixed. The `Facebook` constructor now throws if a budget-like object is passed in place of `{ daily }`.
+  - **Low, fixed:**
+    - `open()` only navigates to `https://(www.)facebook.com`, checked before any budget is spent (`facebookUrl`).
+    - The CSP adds `frame-ancestors`, `base-uri`, `form-action` and `object-src 'none'`, plus `X-Frame-Options: DENY`.
+    - Notification text can't start with `-`, so osascript and notify-send never read it as an option.
+    - Each notification child has a 10 s timeout, then is killed and falls back to the console.
+  - **Low, not fixed (single-user, rare):**
+    - A race when two watchers replace the same stale lock at the same moment.
+    - `DailyBudget` read-modify-write isn't locked across processes, so a `market` run alongside a watch can lose one increment.
+  - **Tests after the fixes:** 165 pass, 0 fail.
+- **Cleanup:** the worktrees and `mw-a` … `mw-e` branches are removed after the merge into `macos-support`.

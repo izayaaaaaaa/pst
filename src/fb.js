@@ -39,13 +39,26 @@ export function marketplaceSearchUrl(
   return `${base}?${params}`;
 }
 
+/** Resolve a path or URL and refuse anything that isn't https on facebook.com (checked before any budget is spent). */
+export function facebookUrl(pathOrUrl) {
+  const u = new URL(pathOrUrl, FB);
+  if (u.protocol !== 'https:' || !['www.facebook.com', 'facebook.com'].includes(u.hostname)) {
+    throw new Error(`Refusing to open non-Facebook URL: ${u.origin}`);
+  }
+  return u.href;
+}
+
 export class Facebook {
   /**
    * @param {import('playwright-core').Page} page
    * @param {import('./guard.js').Budget} budget
    * @param {{ daily?: import('./guard.js').DailyBudget }} [opts]
    */
-  constructor(page, budget, { daily } = {}) {
+  constructor(page, budget, opts = {}) {
+    if (opts === null || typeof opts !== 'object' || typeof opts.spend === 'function') {
+      throw new TypeError('Facebook options must be { daily }, not a budget object');
+    }
+    const { daily } = opts;
     this.page = page;
     this.budget = budget;
     this.daily = daily;
@@ -53,9 +66,9 @@ export class Facebook {
 
   /** Go to a facebook.com path or full URL, then settle like a reader would. */
   async open(pathOrUrl) {
+    const url = facebookUrl(pathOrUrl);
     this.budget.spend();
     this.daily?.spend();
-    const url = pathOrUrl.startsWith('http') ? pathOrUrl : `${FB}${pathOrUrl}`;
     await this.page.goto(url, { waitUntil: 'domcontentloaded' });
     await waitIfBlocked(this.page);
     await pause();
